@@ -1,0 +1,729 @@
+<title>WriterGender</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@400;500;600&display=swap">
+<style>
+  :root{
+    --paper:#EEF1F3; --card:#FBFCFC; --sunk:#E4E9EC;
+    --ink:#161A1E; --ink-2:#414B54; --ink-3:#6B7880;
+    --rule:#D2DADE; --rule-2:#BCC7CD;
+    --female:#0E6E6E; --female-soft:#0E6E6E22;
+    --male:#7A3E6B;  --male-soft:#7A3E6B22;
+    --warn:#8A5A00; --warn-bg:#F4E7C9;
+    --focus:#0E6E6E;
+    --serif:"IBM Plex Serif",Georgia,"Times New Roman",serif;
+    --sans:"IBM Plex Sans",system-ui,-apple-system,Segoe UI,sans-serif;
+    --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  }
+  @media (prefers-color-scheme:dark){
+    :root:not([data-theme="light"]){
+      --paper:#12161A; --card:#1A1F25; --sunk:#0D1114;
+      --ink:#E8EDF0; --ink-2:#AEBAC2; --ink-3:#7E8B94;
+      --rule:#2A323A; --rule-2:#3A444D;
+      --female:#4FC7BD; --female-soft:#4FC7BD26;
+      --male:#C88FB4; --male-soft:#C88FB426;
+      --warn:#E8C77A; --warn-bg:#3A3018;
+      --focus:#4FC7BD;
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#12161A; --card:#1A1F25; --sunk:#0D1114;
+    --ink:#E8EDF0; --ink-2:#AEBAC2; --ink-3:#7E8B94;
+    --rule:#2A323A; --rule-2:#3A444D;
+    --female:#4FC7BD; --female-soft:#4FC7BD26;
+    --male:#C88FB4;  --male-soft:#C88FB426;
+    --warn:#E8C77A; --warn-bg:#3A3018;
+    --focus:#4FC7BD;
+  }
+
+  *{box-sizing:border-box}
+  body{background:var(--paper);color:var(--ink);font-family:var(--sans);
+       font-size:15px;line-height:1.55;margin:0}
+  .wrap{max-width:860px;margin:0 auto;padding-inline:20px;padding-block:32px 64px}
+
+  h1{font-family:var(--serif);font-weight:600;font-size:clamp(28px,5vw,40px);
+     line-height:1.1;margin:0;letter-spacing:-.01em;text-wrap:balance}
+  h2{font-family:var(--serif);font-weight:600;font-size:20px;margin:0;text-wrap:balance}
+  h3{font-family:var(--sans);font-weight:600;font-size:14px;margin:0}
+  p{margin:0}
+  .lede{color:var(--ink-2);max-width:62ch;margin-top:10px}
+  .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.14em;
+           text-transform:uppercase;color:var(--ink-3)}
+
+  header{display:flex;flex-direction:column;gap:4px;margin-bottom:28px}
+
+  /* tabs */
+  .tabs{display:flex;gap:2px;border-bottom:1px solid var(--rule);margin-bottom:24px;flex-wrap:wrap}
+  .tab{appearance:none;background:none;border:0;border-bottom:2px solid transparent;
+       font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;
+       color:var(--ink-3);padding:10px 14px;cursor:pointer;margin-bottom:-1px}
+  .tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--ink)}
+  .tab:hover{color:var(--ink-2)}
+
+  /* panels + controls */
+  .panel{display:flex;flex-direction:column;gap:20px}
+  .field{display:flex;flex-direction:column;gap:8px}
+  label{font-family:var(--mono);font-size:11px;letter-spacing:.1em;
+        text-transform:uppercase;color:var(--ink-3)}
+  textarea{font-family:var(--sans);font-size:14.5px;line-height:1.6;color:var(--ink);
+           background:var(--card);border:1px solid var(--rule);border-radius:3px;
+           padding:14px 16px;min-height:190px;resize:vertical;width:100%}
+  textarea:focus-visible,button:focus-visible,select:focus-visible,input:focus-visible{
+    outline:2px solid var(--focus);outline-offset:2px}
+  .row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+  .count{font-family:var(--mono);font-size:12px;color:var(--ink-3);margin-left:auto}
+  button.go{font-family:var(--sans);font-weight:600;font-size:14px;
+            background:var(--ink);color:var(--paper);border:0;border-radius:3px;
+            padding:10px 22px;cursor:pointer}
+  button.go:hover{opacity:.88}
+  button.ghost{font-family:var(--sans);font-size:13px;background:none;color:var(--ink-2);
+               border:1px solid var(--rule-2);border-radius:3px;padding:8px 14px;cursor:pointer}
+  button.ghost:hover{border-color:var(--ink-3);color:var(--ink)}
+  select,input[type=text]{font-family:var(--sans);font-size:14px;color:var(--ink);
+    background:var(--card);border:1px solid var(--rule);border-radius:3px;padding:8px 10px}
+
+  /* the dial */
+  .readout{background:var(--card);border:1px solid var(--rule);border-radius:4px;
+           padding:22px 20px 18px;display:flex;flex-direction:column;gap:18px}
+  .dial{position:relative;padding-block:8px 0}
+  .dial-poles{display:flex;justify-content:space-between;font-family:var(--mono);
+              font-size:11px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:10px}
+  .pole-m{color:var(--male)} .pole-f{color:var(--female)}
+  .track{position:relative;height:12px;border-radius:2px;
+         background:linear-gradient(90deg,var(--male-soft),var(--sunk) 42%,var(--sunk) 58%,var(--female-soft));
+         border:1px solid var(--rule)}
+  .ticks{position:absolute;inset:0;display:flex;justify-content:space-between}
+  .ticks i{width:1px;background:var(--rule-2)}
+  .ticks i.mid{background:var(--ink-3)}
+  .band{position:absolute;top:-5px;bottom:-5px;border-radius:2px;
+        background:repeating-linear-gradient(45deg,var(--rule) 0 3px,transparent 3px 6px);
+        border-left:1px dashed var(--ink-3);border-right:1px dashed var(--ink-3)}
+  .needle{position:absolute;top:-9px;bottom:-9px;width:3px;border-radius:2px;
+          background:var(--ink);transform:translateX(-1.5px)}
+  .needle-tag{position:absolute;top:-30px;transform:translateX(-50%);white-space:nowrap;
+              font-family:var(--mono);font-size:10px;letter-spacing:.04em;
+              background:var(--card);border:1px solid var(--rule-2);border-radius:2px;padding:1px 5px}
+  .dial.labelled{padding-top:36px}
+  .legend{font-family:var(--mono);font-size:10.5px;color:var(--ink-3);
+          margin-top:6px;display:flex;align-items:center;gap:6px}
+  .legend i{width:22px;height:8px;border-radius:2px;display:inline-block;
+            background:repeating-linear-gradient(45deg,var(--rule) 0 3px,transparent 3px 6px);
+            border-inline:1px dashed var(--ink-3)}
+  .dial-scale{display:flex;justify-content:space-between;margin-top:8px;
+              font-family:var(--mono);font-size:10px;color:var(--ink-3)}
+  .verdict{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+  .verdict .big{font-family:var(--serif);font-size:26px;font-weight:600;line-height:1.15}
+  .verdict .big.f{color:var(--female)} .verdict .big.m{color:var(--male)}
+  .verdict .score{font-family:var(--mono);font-size:13px;color:var(--ink-3);
+                  font-variant-numeric:tabular-nums}
+  .note{font-size:13.5px;color:var(--ink-2);max-width:62ch}
+  .flag{display:flex;gap:10px;background:var(--warn-bg);color:var(--warn);
+        border-radius:3px;padding:10px 12px;font-size:13px;line-height:1.5}
+  .flag b{font-weight:600}
+
+  .passages{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{font-family:var(--mono);font-size:11px;padding:4px 9px;border-radius:2px;
+        border:1px solid var(--rule-2);color:var(--ink-2);font-variant-numeric:tabular-nums}
+  .chip.f{border-color:var(--female);color:var(--female)}
+  .chip.m{border-color:var(--male);color:var(--male)}
+
+  /* evidence */
+  details{border-top:1px solid var(--rule);padding-top:14px}
+  summary{cursor:pointer;font-family:var(--mono);font-size:12px;letter-spacing:.08em;
+          text-transform:uppercase;color:var(--ink-2);list-style:none}
+  summary::-webkit-details-marker{display:none}
+  summary::before{content:"▸ ";color:var(--ink-3)}
+  details[open] summary::before{content:"▾ "}
+  .tablewrap{overflow-x:auto;margin-top:14px}
+  table{border-collapse:collapse;width:100%;min-width:560px;font-size:13px}
+  th{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;
+     color:var(--ink-3);text-align:right;font-weight:500;padding:0 10px 8px;
+     border-bottom:1px solid var(--rule)}
+  th:first-child{text-align:left}
+  td{padding:7px 10px;border-bottom:1px solid var(--rule);text-align:right;
+     font-variant-numeric:tabular-nums;font-family:var(--mono);font-size:12.5px;color:var(--ink-2)}
+  td:first-child{text-align:left;font-family:var(--sans);font-size:13.5px;color:var(--ink)}
+  td .ex{display:block;font-family:var(--mono);font-size:10.5px;color:var(--ink-3);margin-top:1px}
+  .pullcell{width:120px}
+  .pullbar{position:relative;height:8px;background:var(--sunk);border-radius:1px}
+  .pullbar i{position:absolute;top:0;bottom:0;border-radius:1px}
+  .pullbar .axis{position:absolute;top:-2px;bottom:-2px;left:50%;width:1px;background:var(--rule-2)}
+
+  /* compare + test */
+  .split{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media (max-width:640px){ .split{grid-template-columns:1fr} }
+  .mini{background:var(--card);border:1px solid var(--rule);border-radius:4px;padding:14px}
+  .mini h3{margin-bottom:8px}
+  .samples{display:flex;flex-direction:column;gap:6px}
+  .sample{display:flex;gap:10px;align-items:center;background:var(--card);
+          border:1px solid var(--rule);border-radius:3px;padding:8px 10px;font-size:13px}
+  .sample .tag{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;
+               text-transform:uppercase;padding:2px 7px;border-radius:2px;border:1px solid var(--rule-2)}
+  .sample .tag.f{color:var(--female);border-color:var(--female)}
+  .sample .tag.m{color:var(--male);border-color:var(--male)}
+  .sample .txt{flex:1;color:var(--ink-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .sample .res{font-family:var(--mono);font-size:11.5px;font-variant-numeric:tabular-nums}
+  .sample button{appearance:none;background:none;border:0;color:var(--ink-3);cursor:pointer;
+                 font-size:16px;line-height:1;padding:0 2px}
+  .sample button:hover{color:var(--ink)}
+  .scorecard{display:flex;gap:26px;flex-wrap:wrap;background:var(--sunk);
+             border-radius:4px;padding:16px 18px}
+  .stat{display:flex;flex-direction:column;gap:2px}
+  .stat .n{font-family:var(--mono);font-size:24px;font-weight:600;color:var(--ink);
+           font-variant-numeric:tabular-nums;line-height:1.1}
+  .stat .k{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;
+           text-transform:uppercase;color:var(--ink-3)}
+
+  .method{margin-top:44px;border-top:1px solid var(--rule);padding-top:22px;
+          display:flex;flex-direction:column;gap:14px}
+  .method p,.method li{font-size:13.5px;color:var(--ink-2);max-width:66ch}
+  .method ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:7px}
+  .method a{color:var(--ink);text-decoration:underline;text-underline-offset:2px}
+  .method strong{color:var(--ink);font-weight:600}
+  .hidden{display:none}
+  @media (prefers-reduced-motion:no-preference){
+    .needle,.band{transition:left .35s ease,right .35s ease}
+  }
+</style>
+
+<div class="wrap">
+  <header>
+    <span class="eyebrow">Stylometry · function-word analysis</span>
+    <h1>WriterGender</h1>
+    <p class="lede">Measures which way a piece of writing leans on the language features
+      that differ, on average, between men and women — and shows every number behind
+      the result. It reads the writing, not the writer.</p>
+  </header>
+
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab" id="tab-analyze"  aria-selected="true"  aria-controls="p-analyze">Analyze</button>
+    <button class="tab" role="tab" id="tab-compare"  aria-selected="false" aria-controls="p-compare">Compare</button>
+    <button class="tab" role="tab" id="tab-test"     aria-selected="false" aria-controls="p-test">Test accuracy</button>
+  </div>
+
+  <!-- ANALYZE -->
+  <section class="panel" id="p-analyze" role="tabpanel" aria-labelledby="tab-analyze">
+    <div class="field">
+      <label for="text-main">Writing sample <span style="text-transform:none;letter-spacing:0">— 300 words or more</span></label>
+      <textarea id="text-main" spellcheck="false"></textarea>
+      <div class="row">
+        <button class="go" id="btn-analyze">Analyze</button>
+        <button class="ghost" id="btn-clear">Clear</button>
+        <span class="count" id="count-main">0 words</span>
+      </div>
+    </div>
+    <div id="result-main"></div>
+  </section>
+
+  <!-- COMPARE -->
+  <section class="panel hidden" id="p-compare" role="tabpanel" aria-labelledby="tab-compare">
+    <p class="note">Two samples on one scale. Built for the persona question: run the same
+      model under two different prompts and see whether the lean follows the prompt.</p>
+    <div class="split">
+      <div class="field">
+        <label for="name-a">Sample A — label</label>
+        <input type="text" id="name-a" value="Neutral prompt">
+        <textarea id="text-a" spellcheck="false" placeholder="Paste the first sample…"></textarea>
+        <span class="count" id="count-a" style="margin-left:0">0 words</span>
+      </div>
+      <div class="field">
+        <label for="name-b">Sample B — label</label>
+        <input type="text" id="name-b" value="Persona prompt">
+        <textarea id="text-b" spellcheck="false" placeholder="Paste the second sample…"></textarea>
+        <span class="count" id="count-b" style="margin-left:0">0 words</span>
+      </div>
+    </div>
+    <div class="row"><button class="go" id="btn-compare">Compare</button></div>
+    <div id="result-compare"></div>
+  </section>
+
+  <!-- TEST -->
+  <section class="panel hidden" id="p-test" role="tabpanel" aria-labelledby="tab-test">
+    <p class="note">The accuracy of this tool is <strong>not yet known</strong>. Add writing
+      samples whose author you know and it will score them blind, then report how often it
+      was right. Aim for at least 20 writers per group. Samples stay in this browser.</p>
+    <div class="field">
+      <label for="text-test">Add a labelled sample</label>
+      <textarea id="text-test" spellcheck="false" style="min-height:140px"
+        placeholder="Paste writing by an author whose sex you know…"></textarea>
+      <div class="row">
+        <select id="label-test" aria-label="Author">
+          <option value="female">Written by a woman</option>
+          <option value="male">Written by a man</option>
+        </select>
+        <button class="go" id="btn-add">Add sample</button>
+        <button class="ghost" id="btn-wipe">Remove all</button>
+      </div>
+    </div>
+    <div id="result-test"></div>
+  </section>
+
+  <div class="method">
+    <h2>How it works, and what it can't do</h2>
+    <p>Every category below is counted as a share of the words in the sample, compared
+      against how often those words appear in English generally, and then weighted by how
+      strongly that category separated men from women in the published research. The
+      weights come from Newman, Groom, Handelman and Pennebaker (2008), who ran 14,324
+      text samples through standardized language categories and reported an effect size for
+      each one. The largest gaps were in function words — pronouns, articles, prepositions —
+      not in what people wrote about.</p>
+    <ul>
+      <li><strong>Every effect here is small.</strong> In the source study only five
+        categories reached even the conventional threshold for a "small" effect. These are
+        population averages; the authors write that predictions about individuals
+        "should be made cautiously, if at all."</li>
+      <li><strong>The accuracy of this particular tool has not been measured.</strong>
+        Comparable published tools run 60–70% accurate. This one uses its own word lists,
+        so that figure is not inherited. The Test tab exists to establish a real number.</li>
+      <li><strong>It measures a lean, not a person.</strong> A result is a statement about
+        the writing. Field, education, nationality, age and audience all move these
+        numbers. Professional and academic writing tends to read male whoever wrote it.</li>
+      <li><strong>For AI text it measures the persona, not the model.</strong> A model's
+        style comes from its training and its prompt. If the lean changes when the prompt
+        changes, the prompt is what you measured.</li>
+      <li><strong>Poor fits:</strong> poetry, lyrics, lists, quoted or heavily edited text,
+        and anything under 300 words. Remove quoted passages before analyzing.</li>
+    </ul>
+    <p>The word lists are our own compilation, published in the page source. Method after
+      Argamon, Koppel, Fine and Shimoni (2003), who first showed that word usage
+      could predict author sex; no code or word list from any existing tool is used here.
+      Nothing you paste leaves your browser.</p>
+  </div>
+</div>
+
+<script>
+// Gender-lean stylometry engine.
+// Weights, means and SDs: Newman, Groom, Handelman & Pennebaker (2008),
+// "Gender Differences in Language Use: An Analysis of 14,000 Text Samples,"
+// Discourse Processes 45(3), Table 1.  n_female = 8353, n_male = 5971.
+// Positive d = women used the category more; negative d = men used it more.
+// Word lists are our own compilation approximating the LIWC categories.
+
+const N_F = 8353, N_M = 5971;
+
+const WORDS = {
+  pronouns: ["i","me","my","mine","myself","we","us","our","ours","ourselves","you","your","yours","yourself","yourselves","he","him","his","himself","she","her","hers","herself","it","its","itself","they","them","their","theirs","themselves","this","that","these","those","who","whom","whose","what","someone","somebody","something","anyone","anybody","anything","everyone","everybody","everything","nobody","nothing"],
+  firstSing: ["i","me","my","mine","myself"],
+  thirdPerson: ["he","him","his","himself","she","her","hers","herself","they","them","their","theirs","themselves"],
+  articles: ["a","an","the"],
+  prepositions: ["about","above","across","after","against","along","among","around","as","at","before","behind","below","beneath","beside","between","beyond","by","down","during","except","for","from","in","inside","into","like","near","of","off","on","onto","out","outside","over","past","since","through","throughout","to","toward","towards","under","underneath","until","up","upon","with","within","without"],
+  negations: ["no","not","never","none","neither","nor","cannot","cant","dont","wont","didnt","isnt","arent","wasnt","werent","doesnt","hasnt","havent","hadnt","wouldnt","shouldnt","couldnt","aint","nothing","nobody","nowhere","nope"],
+  numbers: ["zero","one","two","three","four","five","six","seven","eight","nine","ten","eleven","twelve","thirteen","fourteen","fifteen","sixteen","seventeen","eighteen","nineteen","twenty","thirty","forty","fifty","sixty","seventy","eighty","ninety","hundred","thousand","million","billion","first","second","third","fourth","fifth","sixth","seventh","eighth","ninth","tenth","half","twice","double","dozen","couple","few","several","many","most","some","all","both","single","once"],
+  swear: ["damn","damned","hell","ass","asshole","bitch","bastard","crap","crappy","shit","shitty","fuck","fucked","fucking","piss","pissed","dick","douche","jerk","screwed","sucks","sucked","goddamn","wtf"],
+  social: ["you","your","yours","yourself","he","him","his","she","her","hers","they","them","their","we","us","our","friend","friends","friendship","family","people","person","everyone","someone","somebody","anybody","neighbor","neighbors","roommate","roommates","classmate","classmates","coworker","coworkers","teammate","partner","guy","guys","girl","girls","boy","boys","man","men","woman","women","kid","kids","child","children","talk","talked","talking","talks","said","say","says","saying","tell","told","telling","ask","asked","asking","share","shared","sharing","call","called","calling","meet","met","meeting","visit","visited","invite","invited","hug","hugged","greet","chat","chatted","conversation","together","each","company"],
+  certainty: ["always","never","absolutely","completely","totally","certainly","definitely","surely","sure","true","truth","truly","fact","facts","must","every","everything","everyone","entirely","clearly","obviously","undoubtedly","guarantee","guaranteed","confident","essential","inevitable","forever","exactly","precisely","perfect","perfectly","undeniable","without","proven","prove","indeed","utterly","wholly"],
+  anxiety: ["nervous","afraid","tense","anxious","anxiety","worry","worried","worries","worrying","scared","scare","fear","fears","fearful","panic","panicked","stress","stressed","stressful","uneasy","dread","dreading","terrified","frightened","apprehensive","restless","overwhelmed","insecure","timid","shy","awkward","embarrassed","embarrassing","tension","nerve","nerves","jittery","uncomfortable","uncertain"],
+  sadness: ["sad","sadness","grief","cry","cried","crying","cries","tears","depressed","depressing","depression","despair","disappoint","disappointed","disappointing","lonely","loneliness","alone","miss","missed","missing","sorrow","unhappy","misery","miserable","gloomy","heartbroken","mourn","mourning","weep","regret","regrets","hopeless","hurting","grieve","sorry","ache","aching"],
+  posFeeling: ["happy","happiness","joy","joyful","love","loved","loves","loving","glad","delight","delighted","cheerful","excited","exciting","wonderful","blessed","grateful","thankful","hope","hopeful","comfort","comfortable","comforting","relaxed","peace","peaceful","content","warmth","smile","smiled","smiling","laugh","laughed","laughing","sweet","enjoy","enjoyed","enjoying","fun","pleasure","lovely","proud","pride"],
+  feeling: ["feel","feels","feeling","feelings","felt","touch","touched","touching","hold","held","holding","hug","hugged","warm","cold","soft","rough","smooth","grab","grabbed","pull","pulled","push","pushed","squeeze","squeezed","tight","ache","aches","sore","pain","painful","hurt","hurts","numb","sweaty","sticky","tired","exhausted","heavy","dizzy","shaky"],
+  home: ["house","houses","home","homes","kitchen","lawn","bedroom","bathroom","yard","garden","apartment","room","rooms","couch","sofa","porch","roof","garage","furniture","door","doors","window","windows","floor","floors","backyard","neighborhood","household","dishes","laundry","closet","upstairs","downstairs","basement","hallway","stairs","bed","blanket","pillow","kettle","oven","fridge"],
+  family: ["mom","mother","mommy","dad","father","daddy","brother","brothers","sister","sisters","cousin","cousins","aunt","uncle","grandma","grandmother","grandpa","grandfather","grandparents","parents","parent","family","families","son","sons","daughter","daughters","wife","husband","sibling","siblings","nephew","niece","kids","child","children","baby","babies","stepmom","stepdad","folks","relatives","marriage","married"],
+  occupation: ["work","works","worked","working","job","jobs","class","classes","boss","career","office","business","company","employee","employer","manager","meeting","meetings","project","projects","assignment","assignments","homework","study","studying","studied","school","college","university","exam","exams","test","tests","grade","grades","professor","teacher","student","students","course","courses","deadline","degree","major","internship","resume","hired","shift","shifts","client","clients","customer","task","tasks","email","emails","report","reports","desk","overtime"],
+  money: ["cash","money","taxes","tax","income","dollars","dollar","pay","paid","paying","price","prices","cost","costs","expensive","cheap","buy","bought","buying","sell","sold","selling","budget","rent","bills","bill","debt","loan","loans","credit","bank","salary","wage","wages","afford","spend","spent","spending","purchase","financial","invest","profit","economy","fee","fees","cheaper","refund"],
+  sports: ["football","basketball","baseball","soccer","hockey","golf","tennis","athlete","athletes","athletic","athletics","quarterback","touchdown","touchdowns","inning","innings","dunk","playoff","playoffs","championship","tournament","league","coach","coaches","teammate","teammates","scoreboard","halftime","nfl","nba","mlb","nhl","superbowl","olympics","varsity","referee","umpire","batting","pitcher","goalie","striker","sprint","marathon","workout","gym","treadmill","dugout","bullpen"]
+};
+
+// key, label, examples, femaleMean, femaleSD, maleMean, maleSD, d (signed), counter
+const CATEGORIES = [
+  { key:"pronouns",    label:"Pronouns",            ex:"I, we, you, she, they",      mf:14.24, sf:4.06, mm:12.69, sm:4.63, d: 0.36, fn:t=>t.listPct("pronouns") },
+  { key:"longWords",   label:"Words over 6 letters",ex:"understand, difficult",      mf:13.99, sf:4.42, mm:15.25, sm:5.91, d:-0.24, fn:t=>t.longWordPct() },
+  { key:"articles",    label:"Articles",            ex:"a, an, the",                 mf: 6.00, sf:2.73, mm: 6.70, sm:2.94, d:-0.24, fn:t=>t.listPct("articles") },
+  { key:"swear",       label:"Swear words",         ex:"damn, crap",                 mf: 0.09, sf:0.25, mm: 0.17, sm:0.44, d:-0.22, fn:t=>t.listPct("swear") },
+  { key:"social",      label:"Social words",        ex:"friend, talk, they",         mf: 9.54, sf:4.92, mm: 8.51, sm:4.72, d: 0.21, fn:t=>t.listPct("social") },
+  { key:"prepositions",label:"Prepositions",        ex:"on, to, from",               mf:12.46, sf:2.44, mm:12.88, sm:2.64, d:-0.17, fn:t=>t.listPct("prepositions") },
+  { key:"feeling",     label:"Feeling words",       ex:"feel, hold, touch",          mf: 0.58, sf:0.67, mm: 0.47, sm:0.66, d: 0.17, fn:t=>t.listPct("feeling") },
+  { key:"anxiety",     label:"Anxiety words",       ex:"nervous, afraid, tense",     mf: 0.48, sf:0.68, mm: 0.38, sm:0.64, d: 0.16, fn:t=>t.listPct("anxiety") },
+  { key:"numbers",     label:"Numbers",             ex:"one, twenty, 47",            mf: 1.37, sf:1.31, mm: 1.59, sm:1.55, d:-0.15, fn:t=>t.numberPct() },
+  { key:"posFeeling",  label:"Positive feelings",   ex:"happy, joy, love",           mf: 0.61, sf:0.61, mm: 0.51, sm:0.65, d: 0.15, fn:t=>t.listPct("posFeeling") },
+  { key:"home",        label:"Home references",     ex:"house, kitchen, lawn",       mf: 0.80, sf:0.76, mm: 0.68, sm:0.79, d: 0.15, fn:t=>t.listPct("home") },
+  { key:"sports",      label:"Sports references",   ex:"football, coach, league",    mf: 0.13, sf:0.30, mm: 0.19, sm:0.50, d:-0.15, fn:t=>t.listPct("sports") },
+  { key:"certainty",   label:"Certainty words",     ex:"always, never, definitely",  mf: 1.35, sf:0.94, mm: 1.21, sm:0.96, d: 0.14, fn:t=>t.listPct("certainty") },
+  { key:"family",      label:"Family references",   ex:"mom, brother, cousin",       mf: 0.77, sf:1.04, mm: 0.64, sm:1.01, d: 0.12, fn:t=>t.listPct("family") },
+  { key:"occupation",  label:"Work references",     ex:"work, class, boss",          mf: 2.34, sf:1.88, mm: 2.59, sm:2.10, d:-0.12, fn:t=>t.listPct("occupation") },
+  { key:"negations",   label:"Negations",           ex:"no, never, not",             mf: 1.85, sf:1.10, mm: 1.72, sm:1.17, d: 0.11, fn:t=>t.listPct("negations") },
+  { key:"sadness",     label:"Sadness words",       ex:"grief, cry, sad",            mf: 0.55, sf:0.76, mm: 0.47, sm:0.70, d: 0.10, fn:t=>t.listPct("sadness") },
+  { key:"money",       label:"Money references",    ex:"cash, taxes, income",        mf: 0.25, sf:0.39, mm: 0.29, sm:0.49, d:-0.10, fn:t=>t.listPct("money") }
+];
+
+const BASELINE = {
+  "pronouns": 10.1913,
+  "firstSing": 2.0077,
+  "thirdPerson": 2.1255,
+  "articles": 8.2994,
+  "prepositions": 14.4982,
+  "negations": 1.3900,
+  "numbers": 1.8641,
+  "swear": 0.1536,
+  "social": 5.6245,
+  "certainty": 0.6458,
+  "anxiety": 0.0717,
+  "sadness": 0.1133,
+  "posFeeling": 0.2966,
+  "feeling": 0.2480,
+  "home": 0.2688,
+  "family": 0.3746,
+  "occupation": 0.7459,
+  "money": 0.4111,
+  "sports": 0.1029,
+  "_longWords": 19.4389,
+  "_digitTokens": 2.2561,
+};
+
+const SETS = {};
+for (const k in WORDS) SETS[k] = new Set(WORDS[k]);
+
+function pooledSD(sf, sm) {
+  return Math.sqrt(((N_F - 1) * sf * sf + (N_M - 1) * sm * sm) / (N_F + N_M - 2));
+}
+
+function tokenize(text) {
+  const lower = text.toLowerCase();
+  const stripped = lower.replace(/[’']/g, "");
+  const words = stripped.match(/[a-z]+/g) || [];
+  return { words };
+}
+
+function analyze(text) {
+  const { words } = tokenize(text);
+  const total = words.length;
+  if (total === 0) return null;
+
+  const counts = {};
+  for (const k in SETS) counts[k] = 0;
+  let longWords = 0;
+  const hits = {};
+  for (const k in SETS) hits[k] = {};
+
+  for (const w of words) {
+    if (w.length >= 7) longWords++;
+    for (const k in SETS) {
+      if (SETS[k].has(w)) {
+        counts[k]++;
+        hits[k][w] = (hits[k][w] || 0) + 1;
+      }
+    }
+  }
+
+  const t = {
+    listPct: k => (counts[k] / total) * 100,
+    longWordPct: () => (longWords / total) * 100,
+    numberPct: () => (counts.numbers / total) * 100
+  };
+
+  // Each category is compared to its expected rate in general English, as a
+  // smoothed count ratio, then log-transformed.  The log-ratios are standardized
+  // WITHIN the text, so any across-the-board genre or tokenization offset cancels
+  // and only the text's relative profile drives the result.
+  const PSEUDO = 2;
+  const raw = CATEGORIES.map(c => {
+    const observed = c.fn(t);
+    const base = BASELINE[c.key === "longWords" ? "_longWords" : c.key];
+    const count = (observed / 100) * total;
+    const expected = (base / 100) * total;
+    const y = Math.log((count + PSEUDO) / (expected + PSEUDO));
+    return { c, observed, base, y };
+  });
+
+  const meanY = raw.reduce((a, r) => a + r.y, 0) / raw.length;
+  const sdY = Math.sqrt(raw.reduce((a, r) => a + (r.y - meanY) ** 2, 0) / raw.length) || 1;
+
+  let weighted = 0, weightSum = 0;
+  const rows = raw.map(({ c, observed, base, y }) => {
+    let z = (y - meanY) / sdY;
+    z = Math.max(-2.5, Math.min(2.5, z));
+    const signed = z * c.d;              // + = leans female, - = leans male
+    weighted += signed;
+    weightSum += Math.abs(c.d);
+    const topHits = Object.entries(hits[c.key] || {}).sort((a, b) => b[1] - a[1]).slice(0, 6);
+    return {
+      key: c.key, label: c.label, ex: c.ex, observed,
+      femaleMean: c.mf, maleMean: c.mm, baseline: base, d: c.d,
+      pull: signed, z, topHits
+    };
+  });
+
+  const score = weighted / weightSum;   // + female, - male
+
+  const sub = {
+    firstSing: (counts.firstSing / total) * 100,
+    thirdPerson: (counts.thirdPerson / total) * 100
+  };
+
+  return { score, rows, wordCount: total, sub };
+}
+
+const THRESHOLDS = [
+  { limit: 0.15, word: "No clear lean" },
+  { limit: 0.35, word: "Slight" },
+  { limit: 0.60, word: "Moderate" },
+  { limit: Infinity, word: "Strong" }
+];
+
+function describe(score) {
+  const mag = Math.abs(score);
+  const band = THRESHOLDS.find(b => mag < b.limit);
+  if (band.word === "No clear lean") return { strength: "No clear lean", direction: "neutral", text: "No clear lean" };
+  const dir = score > 0 ? "female" : "male";
+  return { strength: band.word, direction: dir, text: `${band.word} lean ${dir}` };
+}
+
+// Split the text into passages and score each one. If passages by the same
+// author disagree, the single headline number is not trustworthy, and the
+// report says so instead of hiding it.
+const CHUNK_WORDS = 150;
+
+function analyzeFull(text) {
+  const main = analyze(text);
+  if (!main) return null;
+
+  const tokens = text.trim().split(/\s+/);
+  const chunks = [];
+  if (tokens.length >= CHUNK_WORDS * 2) {
+    const n = Math.min(6, Math.floor(tokens.length / CHUNK_WORDS));
+    const size = Math.floor(tokens.length / n);
+    for (let i = 0; i < n; i++) {
+      const slice = tokens.slice(i * size, i === n - 1 ? tokens.length : (i + 1) * size).join(" ");
+      const r = analyze(slice);
+      if (r) chunks.push({ index: i + 1, score: r.score, words: r.wordCount });
+    }
+  }
+
+  let agreement = null;
+  if (chunks.length >= 2) {
+    const sign = Math.sign(main.score);
+    const agreeing = chunks.filter(c => Math.sign(c.score) === sign && Math.abs(c.score) >= 0.15).length;
+    const spread = Math.max(...chunks.map(c => c.score)) - Math.min(...chunks.map(c => c.score));
+    agreement = { agreeing, total: chunks.length, spread, consistent: agreeing >= Math.ceil(chunks.length * 0.67) };
+  }
+
+  let verdict = describe(main.score);
+  let caveat = null;
+  if (main.wordCount < 300) {
+    caveat = "short";
+  } else if (agreement && !agreement.consistent && verdict.direction !== "neutral") {
+    verdict = { strength: "No clear lean", direction: "neutral", text: "No clear lean" };
+    caveat = "inconsistent";
+  }
+
+  return { ...main, chunks, agreement, verdict, caveat };
+}
+
+/* ---------- sample text shown on load ---------- */
+const SAMPLE = `The road out of town climbs for about four miles before it levels off, and by the time I reached the top the wind had picked up enough that I could hear it working against the side of the truck. I pulled over where the shoulder widens and sat there for a while with the engine off. From that spot you can see most of the valley, the irrigation circles laid out in green and brown, and the shape of the mountains behind them going blue in the late afternoon.
+
+I had driven up there to think about the shop. We have been busy since March, busier than last year, but the numbers have not moved the way I expected. Part of it is that two of the bigger accounts pay late, and part of it is that I took on work I should have turned down. My brother told me months ago that I was underpricing the small jobs, and he was right, though at the time I did not want to hear it. He has a way of being right about the things I am most stubborn about.
+
+There was a hawk working the field below the road, riding the wind up and then peeling off and coming back around. I watched it for maybe ten minutes. It occurred to me that I have not taken an afternoon like that since the spring, and that the reason I feel worn down is probably not complicated.
+
+On the way back I stopped at the house and sat on the porch with a cup of coffee that had gone cold. The dog came out and put her head on my knee. I thought about calling my sister, then decided I would rather wait until I had something useful to say. She worries when I call without a reason, and I did not want to add to that.
+
+Tomorrow I will go in early and go through the invoices one at a time, and I will write down what each job actually cost us instead of what I guessed it cost. That is the whole plan. It is not much of one, but it is more honest than what I have been doing.`;
+
+/* ---------- rendering ---------- */
+const SCALE = 1.0;                       // dial runs -1 .. +1
+const pos = s => ((Math.max(-SCALE, Math.min(SCALE, s)) + SCALE) / (2 * SCALE)) * 100;
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c]));
+const wordsIn = t => (t.trim().match(/[A-Za-z]+(?:['’][A-Za-z]+)?/g) || []).length;
+
+function dial(entries) {
+  const labelled = entries.some(e => e.label);
+  const marks = entries.map(e => {
+    const col = `var(--${e.score > 0 ? "female" : "male"})`;
+    const tag = e.label
+      ? `<span class="needle-tag" style="left:${pos(e.score)}%;color:${col}">${esc(e.label)}</span>` : "";
+    return `${tag}<div class="needle" style="left:${pos(e.score)}%;background:${col}"></div>`;
+  }).join("");
+  let band = "", legend = "";
+  const chunks = entries.length === 1 ? entries[0].chunks : null;
+  if (chunks && chunks.length >= 2) {
+    const xs = chunks.map(c => c.score);
+    const lo = pos(Math.min(...xs)), hi = pos(Math.max(...xs));
+    band = `<div class="band" style="left:${lo}%;right:${100 - hi}%"></div>`;
+    legend = `<div class="legend"><i></i> range across the ${chunks.length} passages of this text</div>`;
+  }
+  return `
+  <div class="dial${labelled ? " labelled" : ""}">
+    <div class="dial-poles"><span class="pole-m">◀ Leans male</span><span class="pole-f">Leans female ▶</span></div>
+    <div class="track">
+      <div class="ticks"><i></i><i></i><i class="mid"></i><i></i><i></i></div>
+      ${band}${marks}
+    </div>
+    <div class="dial-scale"><span>−1.0</span><span>0</span><span>+1.0</span></div>
+    ${legend}
+  </div>`;
+}
+
+function evidenceTable(rows) {
+  const maxPull = Math.max(...rows.map(r => Math.abs(r.pull)), 0.01);
+  const body = rows.slice().sort((a,b) => Math.abs(b.pull) - Math.abs(a.pull)).map(r => {
+    const w = (Math.abs(r.pull) / maxPull) * 50;
+    const isF = r.pull > 0;
+    const bar = `<div class="pullbar"><div class="axis"></div>
+       <i style="${isF ? `left:50%;width:${w}%` : `right:50%;width:${w}%`};
+          background:var(--${isF ? "female" : "male"})"></i></div>`;
+    return `<tr>
+      <td>${esc(r.label)}<span class="ex">${esc(r.ex)}</span></td>
+      <td>${r.observed.toFixed(2)}%</td>
+      <td>${r.baseline.toFixed(2)}%</td>
+      <td style="color:var(--${r.d > 0 ? "female" : "male"})">${r.d > 0 ? "female" : "male"} ${r.d > 0 ? "+" : ""}${r.d.toFixed(2)}</td>
+      <td class="pullcell">${bar}</td>
+    </tr>`;
+  }).join("");
+  return `<details><summary>Why this result — all ${rows.length} categories</summary>
+    <div class="tablewrap"><table>
+      <thead><tr>
+        <th>Category</th><th>This text</th><th>Typical English</th>
+        <th>Research says</th><th class="pullcell">Pull</th>
+      </tr></thead><tbody>${body}</tbody>
+    </table></div>
+    <p class="note" style="margin-top:12px">“Research says” is the published effect size:
+      which way that category leaned and how strongly. “Pull” is that weight applied to how
+      far this text sits from typical English.</p>
+  </details>`;
+}
+
+function verdictBlock(r) {
+  const v = r.verdict;
+  const cls = v.direction === "female" ? "f" : v.direction === "male" ? "m" : "";
+  let flag = "";
+  if (r.caveat === "short") {
+    flag = `<div class="flag"><b>Too short to trust.</b> This sample is ${r.wordCount} words.
+      Below 300 the result swings on a handful of words — treat it as a curiosity, not a reading.</div>`;
+  } else if (r.caveat === "inconsistent") {
+    flag = `<div class="flag"><b>The passages disagree.</b> Scored in sections, this text
+      does not lean consistently one way, so no overall lean is reported. That usually means
+      mixed styles, quoted material, or simply a writer who sits near the middle.</div>`;
+  }
+  const chips = r.chunks.length >= 2
+    ? `<div class="passages">${r.chunks.map(c =>
+        `<span class="chip ${c.score>0?"f":"m"}">passage ${c.index} · ${c.score>0?"+":""}${c.score.toFixed(2)}</span>`
+      ).join("")}</div>` : "";
+  return `<div class="readout">
+    ${dial([{ score: r.score, chunks: r.chunks }])}
+    <div class="verdict">
+      <span class="big ${cls}">${esc(v.text)}</span>
+      <span class="score">score ${r.score > 0 ? "+" : ""}${r.score.toFixed(2)} · ${r.wordCount} words</span>
+    </div>
+    ${flag}${chips}
+    ${evidenceTable(r.rows)}
+  </div>`;
+}
+
+/* ---------- analyze tab ---------- */
+const $ = id => document.getElementById(id);
+const main = $("text-main");
+
+function updateCount(ta, el) { el.textContent = wordsIn(ta.value) + " words"; }
+
+function runMain() {
+  const r = analyzeFull(main.value);
+  $("result-main").innerHTML = r
+    ? verdictBlock(r)
+    : `<p class="note">Paste some writing above and press Analyze.</p>`;
+}
+
+main.value = SAMPLE;
+updateCount(main, $("count-main"));
+main.addEventListener("input", () => updateCount(main, $("count-main")));
+$("btn-analyze").addEventListener("click", runMain);
+$("btn-clear").addEventListener("click", () => {
+  main.value = ""; updateCount(main, $("count-main")); $("result-main").innerHTML = "";
+  main.focus();
+});
+runMain();
+
+/* ---------- compare tab ---------- */
+["a","b"].forEach(k => {
+  const ta = $("text-" + k);
+  ta.addEventListener("input", () => updateCount(ta, $("count-" + k)));
+});
+$("btn-compare").addEventListener("click", () => {
+  const A = analyzeFull($("text-a").value), B = analyzeFull($("text-b").value);
+  if (!A || !B) {
+    $("result-compare").innerHTML = `<p class="note">Both samples need text before they can be compared.</p>`;
+    return;
+  }
+  const nameA = $("name-a").value || "Sample A", nameB = $("name-b").value || "Sample B";
+  const delta = B.score - A.score;
+  const dirWord = Math.abs(delta) < 0.15 ? "barely moved"
+    : (delta > 0 ? "moved toward female" : "moved toward male");
+  $("result-compare").innerHTML = `<div class="readout">
+    ${dial([{ score: A.score, label: nameA }, { score: B.score, label: nameB }])}
+    <div class="split">
+      <div class="mini"><h3>${esc(nameA)}</h3>
+        <p class="note">${esc(A.verdict.text)} · score ${A.score>0?"+":""}${A.score.toFixed(2)} · ${A.wordCount} words</p></div>
+      <div class="mini"><h3>${esc(nameB)}</h3>
+        <p class="note">${esc(B.verdict.text)} · score ${B.score>0?"+":""}${B.score.toFixed(2)} · ${B.wordCount} words</p></div>
+    </div>
+    <p class="note">From A to B the lean <strong>${dirWord}</strong> by
+      ${Math.abs(delta).toFixed(2)} points on a scale that runs from −1 to +1.
+      ${Math.abs(delta) < 0.15
+        ? "A difference this small is within the noise of the method."
+        : "If the only thing you changed was the prompt, the prompt is what moved it."}</p>
+    ${A.caveat === "short" || B.caveat === "short"
+      ? `<div class="flag"><b>One sample is short.</b> Under 300 words the comparison is unreliable.</div>` : ""}
+  </div>
+  ${evidenceTable(B.rows).replace("Why this result", "Why " + esc(nameB) + " scored that way")}`;
+});
+
+/* ---------- test tab ---------- */
+const STORE = "writing-lean-samples";
+let bank = [];
+try { bank = JSON.parse(localStorage.getItem(STORE) || "[]"); } catch (e) { bank = []; }
+function save() { try { localStorage.setItem(STORE, JSON.stringify(bank)); } catch (e) {} }
+
+function renderTest() {
+  const box = $("result-test");
+  if (!bank.length) {
+    box.innerHTML = `<p class="note">No samples yet. Accuracy appears once you have added some.</p>`;
+    return;
+  }
+  const scored = bank.map(s => {
+    const r = analyzeFull(s.text);
+    const guess = r.verdict.direction;
+    return { ...s, score: r.score, guess, words: r.wordCount,
+             correct: guess === s.label, called: guess !== "neutral" };
+  });
+  const called = scored.filter(s => s.called);
+  const right = called.filter(s => s.correct).length;
+  const pct = called.length ? Math.round((right / called.length) * 100) : 0;
+  const byF = called.filter(s => s.label === "female"), byM = called.filter(s => s.label === "male");
+  const list = scored.map((s, i) => `<div class="sample">
+      <span class="tag ${s.label[0]}">${s.label === "female" ? "woman" : "man"}</span>
+      <span class="txt">${esc(s.text.slice(0, 90))}…</span>
+      <span class="res" style="color:var(--${s.called ? (s.correct ? "female" : "male") : "ink-3"})">
+        ${s.called ? (s.correct ? "hit" : "miss") : "no call"} ${s.score > 0 ? "+" : ""}${s.score.toFixed(2)}</span>
+      <button data-i="${i}" title="Remove" aria-label="Remove sample">×</button>
+    </div>`).join("");
+  box.innerHTML = `<div class="scorecard">
+      <div class="stat"><span class="n">${pct}%</span><span class="k">accuracy</span></div>
+      <div class="stat"><span class="n">${right}/${called.length}</span><span class="k">correct calls</span></div>
+      <div class="stat"><span class="n">${scored.length - called.length}</span><span class="k">no call</span></div>
+      <div class="stat"><span class="n">${byF.filter(s=>s.correct).length}/${byF.length}</span><span class="k">women</span></div>
+      <div class="stat"><span class="n">${byM.filter(s=>s.correct).length}/${byM.length}</span><span class="k">men</span></div>
+    </div>
+    ${called.length < 20 ? `<p class="note">With ${called.length} scored sample${called.length===1?"":"s"},
+      this percentage is not yet a measurement. Random guessing gives 50%, and small sets swing
+      wildly. Twenty or more writers per group is where the number starts to mean something.</p>` : ""}
+    <div class="samples">${list}</div>`;
+  box.querySelectorAll("button[data-i]").forEach(b =>
+    b.addEventListener("click", () => { bank.splice(+b.dataset.i, 1); save(); renderTest(); }));
+}
+
+$("btn-add").addEventListener("click", () => {
+  const text = $("text-test").value.trim();
+  if (!text) return;
+  bank.push({ text, label: $("label-test").value });
+  save(); $("text-test").value = ""; renderTest();
+});
+$("btn-wipe").addEventListener("click", () => { bank = []; save(); renderTest(); });
+renderTest();
+
+/* ---------- tabs ---------- */
+const panels = { "tab-analyze":"p-analyze", "tab-compare":"p-compare", "tab-test":"p-test" };
+document.querySelectorAll(".tab").forEach(t => t.addEventListener("click", () => {
+  for (const [tab, panel] of Object.entries(panels)) {
+    const on = tab === t.id;
+    $(tab).setAttribute("aria-selected", String(on));
+    $(panel).classList.toggle("hidden", !on);
+  }
+}));
+</script>
