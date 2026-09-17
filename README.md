@@ -6,7 +6,7 @@ and shows every number behind the result.
 
 It analyzes writing, not writers. A result is a statement about a text.
 
-**[Live demo](https://jkh2.github.io/writergender/)** · No install, no account,
+**[Live demo](https://jameskeithharwood.com/WriterGender/)** · No install, no account,
 no server. Everything runs in your browser and nothing you paste leaves your device.
 
 ---
